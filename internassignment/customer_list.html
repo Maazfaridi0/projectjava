@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Customer List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Customer List</h1>
+    <table id="customerTable">
+        <thead>
+            <tr>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+    <button onclick="addCustomer()">Add Customer</button>
+
+    <script>
+        // Fetch and display the customer list
+        function fetchCustomerList() {
+            const token = localStorage.getItem("token");
+            $.ajax({
+                url: "https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp?cmd=get_customer_list",
+                method: "GET",
+                headers: {
+                    "Authorization": "Bearer " + token
+                },
+                success: function (data) {
+                    displayCustomerList(data);
+                },
+                error: function (error) {
+                    alert("Failed to fetch customer list.");
+                }
+            });
+        }
+
+        // Display the customer list in the table
+        function displayCustomerList(customers) {
+            const tbody = $("#customerTable tbody");
+            tbody.empty();
+
+            customers.forEach(function (customer) {
+                const row = `
+                    <tr>
+                        <td>${customer.first_name}</td>
+                        <td>${customer.last_name}</td>
+                        <td>${customer.email}</td>
+                        <td>${customer.phone}</td>
+                        <td>
+                            <button onclick="editCustomer('${customer.uuid}')">Edit</button>
+                            <button onclick="deleteCustomer('${customer.uuid}')">Delete</button>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+
+        // Function to delete a customer
+        function deleteCustomer(uuid) {
+            const token = localStorage.getItem("token");
+            $.ajax({
+                url: "https://qa2.sunbasedata.com/sunbase/portal/api/assignment.jsp",
+                method: "POST",
+                headers: {
+                    "Authorization": "Bearer " + token
+                },
+                data: {
+                    "cmd": "delete",
+                    "uuid": uuid
+                },
+                success: function (data) {
+                    fetchCustomerList();
+                },
+                error: function (error) {
+                    alert("Failed to delete customer.");
+                }
+            });
+        }
+
+        // Function to navigate to the Add a new customer screen
+        function addCustomer() {
+            window.location.href = "add_customer.html";
+        }
+
+        // Fetch and display the customer list on page load
+        $(document).ready(function () {
+            fetchCustomerList();
+        });
+    </script>
+</body>
+</html>
